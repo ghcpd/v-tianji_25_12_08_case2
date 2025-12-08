@@ -1,0 +1,93 @@
+.analytics {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.analytics h1 {
+  margin-bottom: 2rem;
+  color: #2c3e50;
+}
+
+.analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.summary-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h3 {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.analytics-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.chart-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h2 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.metric-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.metric-selector button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #bdc3c7;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #2c3e50;
+}
+
+.metric-selector button:hover {
+  background: #ecf0f1;
+}
+
+.metric-selector button.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.analytics-loading,
+.analytics-error {
+  padding: 2rem;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.analytics-error {
+  color: #e74c3c;
+}
+
