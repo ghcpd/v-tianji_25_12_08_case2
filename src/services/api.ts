@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const API_BASE_URL = 'https://api.example.com'
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
@@ -66,15 +66,44 @@ export interface Settings {
   }
 }
 
+// Helper: normalize raw user objects coming from the API into the canonical User interface
+function normalizeUser(raw: any): User {
+  return {
+    id: Number(raw.id),
+    name: raw.name ?? raw.fullName ?? '',
+    email: raw.email ?? raw.emailAddress ?? '',
+    role: raw.role ?? raw.user_role ?? 'user',
+    createdAt: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
+    status: (() => {
+      if (typeof raw.status === 'string') {
+        const s = raw.status.toLowerCase()
+        if (s === 'active' || s === 'inactive') return s as 'active' | 'inactive'
+        if (s === 'enabled' || s === 'true' || s === '1') return 'active'
+        return 'inactive'
+      }
+      if (typeof raw.enabled === 'boolean') return raw.enabled ? 'active' : 'inactive'
+      return 'inactive'
+    })(),
+    profile: {
+      avatar: (raw.profile && (raw.profile.avatar ?? raw.profile.avatar_url)) ?? raw.avatar ?? '',
+      department: (raw.profile && (raw.profile.department ?? raw.profile.dept)) ?? raw.department ?? '',
+      location: (raw.profile && (raw.profile.location ?? raw.profile.city)) ?? raw.location ?? '',
+    },
+  }
+}
+
 export const userService = {
   getUsers: async (): Promise<User[]> => {
     const response = await apiClient.get('/api/v1/users')
-    return response.data
+    const raw = response.data
+    // API may return either an array of users or wrapped inside an object, normalize both
+    const list = Array.isArray(raw) ? raw : raw?.users ?? []
+    return list.map(normalizeUser)
   },
 
   getUserById: async (id: number): Promise<User> => {
     const response = await apiClient.get(`/api/v1/users/${id}`)
-    return response.data
+    return normalizeUser(response.data)
   },
 
   createUser: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
@@ -107,11 +136,18 @@ export const analyticsService = {
     const response = await apiClient.get('/api/v2/analytics/metrics', {
       params: { startDate, endDate },
     })
-    return response.data
+    // Normalize conversionRate unit: allow servers to return either 0-1 or 0-100
+    const data = response.data as AnalyticsData
+    if (data?.summary && typeof data.summary.conversionRate === 'number' && data.summary.conversionRate > 1) {
+      data.summary.conversionRate = data.summary.conversionRate / 100
+    }
+
+    return data
   },
 
   getTrends: async (metric: string): Promise<{ date: string; value: number }[]> => {
-    const response = await apiClient.get('/api/v1/analytics/trends', {
+    // trends moved to v2 alongside metrics — use v2 endpoint
+    const response = await apiClient.get('/api/v2/analytics/trends', {
       params: { metric },
     })
     return response.data
