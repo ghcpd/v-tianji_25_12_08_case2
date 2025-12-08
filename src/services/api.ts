@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const API_BASE_URL = 'https://api.example.com'
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
@@ -17,10 +17,10 @@ export interface User {
   role: string
   createdAt: string
   status: 'active' | 'inactive'
-  profile: {
-    avatar: string
-    department: string
-    location: string
+  profile?: {
+    avatar?: string
+    department?: string
+    location?: string
   }
 }
 
@@ -66,39 +66,82 @@ export interface Settings {
   }
 }
 
-export const userService = {
+// Normalizers: make the service resilient to API schema variations (snake_case, missing nested objects)
+function normalizeUser(raw: any): User {
+  const profile = raw.profile || {}
+  return {
+    id: raw.id,
+    name: raw.name,
+    email: raw.email,
+    role: raw.role,
+    createdAt: raw.createdAt,
+    status: raw.status || 'inactive',
+    profile: {
+      avatar: profile.avatar ?? '',
+      department: profile.department ?? '',
+      location: profile.location ?? '',
+    },
+  }
+}
+
+function normalizeActivity(raw: any) {
+  return {
+    id: raw.id,
+    type: raw.type,
+    description: raw.description,
+    timestamp: raw.timestamp,
+    userId: raw.userId ?? raw.user_id,
+  }
+}
+
+function normalizeDashboardStats(raw: any) {
+  return {
+    totalUsers: raw.totalUsers ?? raw.total_users ?? 0,
+    activeUsers: raw.activeUsers ?? raw.active_users ?? 0,
+    revenue: raw.revenue ?? 0,
+    growth: raw.growth ?? 0,
+    recentActivity: (raw.recentActivity ?? raw.recent_activity ?? []).map(normalizeActivity),
+  }
+}
+
+export const userService = { 
   getUsers: async (): Promise<User[]> => {
     const response = await apiClient.get('/api/v1/users')
-    return response.data
+    const data = response.data
+    // support either top-level array or { users: [] } wrapper
+    const list = Array.isArray(data) ? data : (data.users ?? [])
+    return list.map(normalizeUser)
   },
 
   getUserById: async (id: number): Promise<User> => {
     const response = await apiClient.get(`/api/v1/users/${id}`)
-    return response.data
+    return normalizeUser(response.data)
   },
 
   createUser: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
     const response = await apiClient.post('/api/v1/users', userData)
-    return response.data
+    return normalizeUser(response.data)
   },
 
   updateUser: async (id: number, userData: Partial<User>): Promise<User> => {
     const response = await apiClient.put(`/api/v1/users/${id}`, userData)
-    return response.data
+    return normalizeUser(response.data)
   },
 }
 
 export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     const response = await apiClient.get('/api/v1/dashboard/stats')
-    return response.data
+    return normalizeDashboardStats(response.data)
   },
 
   getActivity: async (limit: number = 10): Promise<Activity[]> => {
     const response = await apiClient.get('/api/v1/dashboard/activity', {
       params: { limit },
     })
-    return response.data
+    const data = response.data
+    const list = Array.isArray(data) ? data : (data.activities ?? [])
+    return list.map(normalizeActivity)
   },
 }
 
@@ -111,10 +154,12 @@ export const analyticsService = {
   },
 
   getTrends: async (metric: string): Promise<{ date: string; value: number }[]> => {
-    const response = await apiClient.get('/api/v1/analytics/trends', {
+    const response = await apiClient.get('/api/v2/analytics/trends', {
       params: { metric },
     })
-    return response.data
+    const data = response.data
+    const list = Array.isArray(data) ? data : (data.trends ?? [])
+    return list.map((t: any) => ({ date: String(t.date), value: Number(t.value) }))
   },
 }
 
