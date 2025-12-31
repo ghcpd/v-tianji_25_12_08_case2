@@ -1,0 +1,7 @@
+Prompt
+
+Analyze this frontend React/TypeScript application for API compatibility issues. Your task is to identify:
+
+Outdated endpoints – API endpoints that may be using incorrect versions or deprecated paths
+
+Schema mismatches – Discrepancies between the expected data structures (TypeScript interfaces) and what the actual API responses might return
