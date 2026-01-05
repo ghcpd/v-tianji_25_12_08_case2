@@ -5,3 +5,28 @@ Analyze this frontend React/TypeScript application for API compatibility issues.
 Outdated endpoints – API endpoints that may be using incorrect versions or deprecated paths
 
 Schema mismatches – Discrepancies between the expected data structures (TypeScript interfaces) and what the actual API responses might return
+
+Task:
+Examine the codebase, focusing on the API service layer and how components consume API responses. Compare TypeScript interface definitions with actual API usage patterns to detect potential incompatibilities.
+
+Deliverables:
+For each issue found, provide:
+
+Issue Type: [Outdated Endpoint / Schema Mismatch]
+
+Location: File path and line number
+
+API Endpoint: The endpoint URL
+
+Problem Description: What the code expects vs. what might actually be returned
+
+Evidence: API call pattern and response structure analysis showing the discrepancy
+
+Impact: What would happen if the actual API response doesn't match expectations
+
+Additional Requirement:
+For every API compatibility issue identified, modify the affected code and include new or updated automated test cases. All tests must pass successfully, demonstrating that the API adjustments are correct and stable.
+
+Title: API Compatibility Corrections and Version Alignment
+
+Description: This task requires a deep analysis of endpoint usage and response structures across the codebase. All incompatible API calls must be corrected, schemas aligned with actual data, and corresponding automated tests added and successfully executed to ensure complete functional stability.
