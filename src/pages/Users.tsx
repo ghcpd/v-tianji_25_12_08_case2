@@ -56,7 +56,7 @@ const Users = () => {
                 onClick={() => handleUserClick(user.id)}
               >
                 <div className="user-avatar">
-                  {user.profile.avatar ? (
+                  {user.profile && user.profile.avatar ? (
                     <img src={user.profile.avatar} alt={user.name} />
                   ) : (
                     <div className="avatar-placeholder">
@@ -89,11 +89,13 @@ const Users = () => {
               <p><strong>Status:</strong> {selectedUser.status}</p>
               <p><strong>Created:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</p>
             </div>
-            <div className="detail-section">
-              <h3>Profile</h3>
-              <p><strong>Department:</strong> {selectedUser.profile.department}</p>
-              <p><strong>Location:</strong> {selectedUser.profile.location}</p>
-            </div>
+              {selectedUser.profile && (
+                <div className="detail-section">
+                  <h3>Profile</h3>
+                  <p><strong>Department:</strong> {selectedUser.profile.department || '—'}</p>
+                  <p><strong>Location:</strong> {selectedUser.profile.location || '—'}</p>
+                </div>
+              )}
             <button onClick={() => setSelectedUser(null)}>Close</button>
           </div>
         )}

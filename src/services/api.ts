@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const API_BASE_URL = 'https://api.example.com'
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
@@ -16,11 +16,11 @@ export interface User {
   email: string
   role: string
   createdAt: string
-  status: 'active' | 'inactive'
-  profile: {
-    avatar: string
-    department: string
-    location: string
+  status: string
+  profile?: {
+    avatar?: string
+    department?: string
+    location?: string
   }
 }
 
@@ -41,8 +41,9 @@ export interface Activity {
 }
 
 export interface AnalyticsData {
-  period: string
+  period?: string
   metrics: {
+    period: string
     views: number
     clicks: number
     conversions: number
@@ -111,7 +112,8 @@ export const analyticsService = {
   },
 
   getTrends: async (metric: string): Promise<{ date: string; value: number }[]> => {
-    const response = await apiClient.get('/api/v1/analytics/trends', {
+    // trends endpoint updated to v2 to match metrics versioning
+    const response = await apiClient.get('/api/v2/analytics/trends', {
       params: { metric },
     })
     return response.data
